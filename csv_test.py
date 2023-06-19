@@ -28,11 +28,13 @@ def scv_write():#Запись в сsv файл для windows
             )
             '''
 
-def csv_read(way):
-    table = [None] * 8
+def csv_read(way, namber):
+    #table = [None] * 8
+    table = [None] * 9
+    table[0] = struct.pack("B", namber)
     with open(way,"r") as file:
         reader = csv.reader(file,delimiter = ";")
-        count = 0
+        count = 1
         for line in reader:
             byte = 0
             for i in line:
@@ -51,7 +53,7 @@ def csv_read(way):
         return table
 
 if __name__ == "__main__":
-    bytes_csv = csv_read("C:\\PROGRAMS\\NTO\\csv\\Karno.csv")
+    bytes_csv = csv_read("C:\\PROGRAMS\\NTO\\csv\\Karno2.csv",1)
     print(bytes_csv)
 
     

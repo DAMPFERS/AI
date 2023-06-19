@@ -12,12 +12,19 @@ def start_server_one(list_bytes):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.bind((LOCALHOST, PORT))
         print("ОН ВОССТАЛ !!!")
+        count = 0
         server.listen(4)
         while(True):
             client_socket, address = server.accept()
             data = client_socket.recv(1024).decode('utf-8')
             print(data)
-            for i in list_bytes:
+            if data == '1':
+                count = 1
+            elif data == '2':
+                count = 2
+            elif data == '3':
+                return
+            for i in list_bytes[count]:
                 client_socket.send(i)
             client_socket.shutdown(socket.SHUT_WR)
     except KeyboardInterrupt:
@@ -32,7 +39,10 @@ def start_server_one(list_bytes):
 
 
 if __name__ == '__main__':
-    a = csv_test.csv_read("C:\\PROGRAMS\\NTO\\csv\\Karno.csv")
+    a = [None]*3
+    a[0] = csv_test.csv_read("C:\\PROGRAMS\\NTO\\csv\\Karno.csv", 1)
+    a[1] = csv_test.csv_read("C:\\PROGRAMS\\NTO\\csv\\Karno1.csv", 2)
+    a[2] = csv_test.csv_read("C:\\PROGRAMS\\NTO\\csv\\Karno2.csv", 3)
     start_server_one(a)
     #bytes([a])# преобразует int в байт, до 255, по скорости  2
     # 'import struct',   struct.pack(">H", 200) преобразует int в байт, (строка формата, длина байта, знак, порядок следования байтов), "B" до 256, ">H" 2 байта в прямом напрвлении и т.д

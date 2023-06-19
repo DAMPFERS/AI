@@ -7,7 +7,7 @@ const char* ssid     = "Honor 8C";
 const char* password = "89243536319";
 //const char* ssid     = "SumОм";
 //const char* password = "sumomsumom";
-
+byte feedback = 0;
 
 
 void setup() {
@@ -20,9 +20,6 @@ void setup() {
     Serial.print(".");
     delay(500);
   }
-  //Serial.print("Connected to ");
-  //Serial.println(ssid);
-  //Serial.println("\nStarting connection to server...");
   delay(1000);
 }
 
@@ -32,12 +29,13 @@ void loop() {
     delay(3000);
   if (client.connected())
   {
-    client.print("12");  
+    client.print(feedback);  
     delay(500);
     if (client.available() > 0){
-      byte packageS[8];
-      int packageS_size = client.readBytes(packageS,8);
-      for (int i = 0; i < 8; i++)
+      byte packageS[9];
+      int packageS_size = client.readBytes(packageS,9);
+      feedback = packageS[0];
+      for (int i = 0; i < 9; i++)
         Serial.write(packageS[i]);
     }
     //char w[15];

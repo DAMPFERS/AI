@@ -24,7 +24,11 @@ void loop() {
     //delay(100);  
   //}
   if (mySerial.available() > 0){
-    int size_bytes = mySerial.readBytes(bytes,8); 
+    byte packet[9];
+    int size_bytes = mySerial.readBytes(packet,9);
+    Serial.println(packet[0]);
+    for (int i = 1; i < 9; i++)
+        bytes[i-1] = packet[i];
     byte_flag = true;   
     delay(100);  
   }
