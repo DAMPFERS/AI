@@ -1,0 +1,94 @@
+import numpy as np
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+
+# Датасет для логической операции (a or b) and (b or c)
+def generate_dataset():
+    data = np.array([[int(x) for x in f"{i:03b}"] for i in range(8)])  # 3-битные входы
+    labels = np.array([((a or b) and (b or c)) for a, b, c in data], dtype=int)
+    return data, labels
+
+# Создание модели
+def create_model():
+    model = Sequential([
+        Dense(10, activation='relu', input_shape=(3,)),
+        Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer=Adam(learning_rate=0.01), loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+
+def logical_operation_elementwise(inputs, weights):
+    """
+    Функция для вычисления результата логической операции с использованием поэлементных операций.
+    :param inputs: Входной тензор (np.array размера Nx3).
+    :param weights: Список весов модели, каждый элемент - список [weights, biases].
+    :return: Результаты логической операции (массив Nx1).
+    """
+    # Первый слой
+    w1, b1 = weights[0]  # Первый слой: веса и смещения
+    layer1 = np.maximum(0, np.dot(inputs, w1) + b1)  # relu активация
+
+    # Второй слой
+    w2, b2 = weights[1]  # Второй слой: веса и смещения
+    output = 1 / (1 + np.exp(-np.dot(layer1, w2) - b2))  # sigmoid активация
+
+    return output
+
+
+
+def logical_operation_numpy(inputs, weights):
+    """
+    Функция для вычисления результата логической операции с использованием NumPy операций.
+    :param inputs: Входной тензор (np.array размера Nx3).
+    :param weights: Список весов модели, каждый элемент - список [weights, biases].
+    :return: Результаты логической операции (массив Nx1).
+    """
+    # Первый слой
+    w1, b1 = weights[0]  # Первый слой: веса и смещения
+    layer1 = np.dot(inputs, w1) + b1
+    layer1[layer1 < 0] = 0  # relu активация
+
+    # Второй слой
+    w2, b2 = weights[1]  # Второй слой: веса и смещения
+    output = 1 / (1 + np.exp(-np.dot(layer1, w2) - b2))  # sigmoid активация
+
+    return output
+
+
+if __name__ == "__main__":
+    # Генерация данных
+    data, labels = generate_dataset()
+
+    # Создание модели
+    model = create_model()
+
+    # Получение весов
+    weights = [layer.get_weights() for layer in model.layers]
+
+    # Проверка функций на не обученной модели
+    print("На не обученной модели:")
+    predictions_model = model.predict(data)
+    predictions_func1 = logical_operation_elementwise(data, weights)
+    predictions_func2 = logical_operation_numpy(data, weights)
+
+    print("Модель:", predictions_model.flatten())
+    print("Функция 1:", predictions_func1.flatten())
+    print("Функция 2:", predictions_func2.flatten())
+
+    # Обучение модели
+    model.fit(data, labels, epochs=100, verbose=0)
+
+    # Получение весов обученной модели
+    trained_weights = [layer.get_weights() for layer in model.layers]
+
+    # Проверка функций на обученной модели
+    print("\nНа обученной модели:")
+    predictions_model_trained = model.predict(data)
+    predictions_func1_trained = logical_operation_elementwise(data, trained_weights)
+    predictions_func2_trained = logical_operation_numpy(data, trained_weights)
+
+    print("Модель:", predictions_model_trained.flatten())
+    print("Функция 1:", predictions_func1_trained.flatten())
+    print("Функция 2:", predictions_func2_trained.flatten())
